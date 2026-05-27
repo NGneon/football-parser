@@ -1,0 +1,759 @@
+{
+	"leagues": [
+		{
+			"id": "eng-premier-2024",
+			"country": "Англия",
+			"league": "Премьер-лига",
+			"season": "2024/2025",
+			"leagueLabel": "Англия: Премьер-лига",
+			"seasonUrl": "https://www.livescore.in/ru/football/england/premier-league-2024-2025/results/",
+			"enabled": false
+		},
+		{
+			"id": "de-bundesliga-2024",
+			"country": "Германия",
+			"league": "Бундеслига",
+			"season": "2024/2025",
+			"leagueLabel": "Германия: Бундеслига",
+			"seasonUrl": "https://www.livescore.in/ru/football/germany/bundesliga-2024-2025/results/",
+			"enabled": false
+		},
+		{
+			"id": "ast-ligue-a-2025",
+			"country": "Австралия",
+			"league": "Лига А",
+			"season": "2025/2026",
+			"leagueLabel": "Австралия: Лига А",
+			"seasonUrl": "https://www.livescore.in/ru/football/australia/a-league/results/",
+			"enabled": true
+		},
+		{
+			"id": "avstria-bundesliga-2025",
+			"country": "Австрия",
+			"league": "Бундеслига",
+			"season": "2025/2026",
+			"leagueLabel": "Австрия: Бундеслига",
+			"seasonUrl": "https://www.livescore.in/ru/football/austria/bundesliga/results/",
+			"enabled": true
+		},
+		{
+			"id": "avstria-2-liga-2025",
+			"country": "Австрия",
+			"league": "2-я лига",
+			"season": "2025/2026",
+			"leagueLabel": "Австрия: 2-я лига",
+			"seasonUrl": "https://www.livescore.in/ru/football/austria/2-liga/results/",
+			"enabled": true
+		},
+		{
+			"id": "az-premier-league-2025",
+			"country": "Азербайджан",
+			"league": "Премьер-лига",
+			"season": "2025/2026",
+			"leagueLabel": "Азербайджан: Премьер-лига",
+			"seasonUrl": "https://www.livescore.in/ru/football/azerbaijan/premier-league/results/",
+			"enabled": true
+		},
+		{
+			"id": "alb-abissnet-superiore-2025",
+			"country": "Албания",
+			"league": "Абiссет Суперiore",
+			"season": "2025/2026",
+			"leagueLabel": "Албания: Абiссет Суперiore",
+			"seasonUrl": "https://www.livescore.in/ru/football/albania/abissnet-superiore/results/",
+			"enabled": true
+		},
+		{
+			"id": "eng-premier-2025",
+			"country": "Англия",
+			"league": "Премьер-лига",
+			"season": "2025/2026",
+			"leagueLabel": "Англия: Премьер-лига",
+			"seasonUrl": "https://www.livescore.in/ru/football/england/premier-league/results/",
+			"enabled": true
+		},
+		{
+			"id": "eng-championship-2025",
+			"country": "Англия",
+			"league": "Чемпионшип",
+			"season": "2025/2026",
+			"leagueLabel": "Англия: Чемпионшип",
+			"seasonUrl": "https://www.livescore.in/ru/football/england/championship/results/",
+			"enabled": true
+		},
+		{
+			"id": "eng-league-one-2025",
+			"country": "Англия",
+			"league": "Лига Один",
+			"season": "2025/2026",
+			"leagueLabel": "Англия: Первая лига",
+			"seasonUrl": "https://www.livescore.in/ru/football/england/league-one/results/",
+			"enabled": true
+		},
+		{
+			"id": "eng-league-two-2025",
+			"country": "Англия",
+			"league": "Вторая лига",
+			"season": "2025/2026",
+			"leagueLabel": "Англия: Вторая лига",
+			"seasonUrl": "https://www.livescore.in/ru/football/england/league-two/results/",
+			"enabled": true
+		},
+		{
+			"id": "eng-national-league-2025",
+			"country": "Англия",
+			"league": "Национальная лига",
+			"season": "2025/2026",
+			"leagueLabel": "Англия: Национальная лига",
+			"seasonUrl": "https://www.livescore.in/ru/football/england/national-league/results/",
+			"enabled": true
+		},
+		{
+			"id": "and-primera-division-2025",
+			"country": "Андорра",
+			"league": "Примера",
+			"season": "2025/2026",
+			"leagueLabel": "Примера",
+			"seasonUrl": "https://www.livescore.in/ru/football/andorra/primera-division/results/",
+			"enabled": true
+		},
+		{
+			"id": "arg-liga-profesional-2025",
+			"country": "Аргентина",
+			"league": "Лига Профессиональ",
+			"season": "2025/2026",
+			"leagueLabel": "Аргентина: Лига Профессиональ",
+			"seasonUrl": "https://www.livescore.in/ru/football/argentina/liga-profesional/results/",
+			"enabled": true
+		},
+		{
+			"id": "arg-primera-nacional-2025",
+			"country": "Аргентина",
+			"league": "Первая Националь",
+			"season": "2025/2026",
+			"leagueLabel": "Аргентина: Первая Националь",
+			"seasonUrl": "https://www.livescore.in/ru/football/argentina/primera-nacional/results/",
+			"enabled": true
+		},
+		{
+			"id": "arg-torneo-federal-2025",
+			"country": "Аргентина",
+			"league": "Торneo Федерал",
+			"season": "2025/2026",
+			"leagueLabel": "Аргентина: Торneo Федерал",
+			"seasonUrl": "https://www.livescore.in/ru/football/argentina/torneo-federal/results/",
+			"enabled": true
+		},
+		{
+			"id": "arg-primera-b-2025",
+			"country": "Аргентина",
+			"league": "Первая Б",
+			"season": "2025/2026",
+			"leagueLabel": "Аргентина: Первая Б",
+			"seasonUrl": "https://www.livescore.in/ru/football/argentina/primera-b/results/",
+			"enabled": true
+		},
+		{
+			"id": "arm-premier-league-2025",
+			"country": "Армения",
+			"league": "Премьер-лига",
+			"season": "2025/2026",
+			"leagueLabel": "Армения: Премьер-лига",
+			"seasonUrl": "https://www.livescore.in/ru/football/armenia/premier-league/results/",
+			"enabled": true
+		},
+		{
+			"id": "ban-bfl-2025",
+			"country": "Бангладеш",
+			"league": "БФЛ",
+			"season": "2025/2026",
+			"leagueLabel": "Бангладеш: БФЛ",
+			"seasonUrl": "https://www.livescore.in/ru/football/bangladesh/bfl/results/",
+			"enabled": true
+		},
+		{
+			"id": "blr-vysshaya-liga-2025",
+			"country": "Беларусь",
+			"league": "Высшая лига",
+			"season": "2025/2026",
+			"leagueLabel": "Беларусь: Высшая лига",
+			"seasonUrl": "https://www.livescore.in/ru/football/belarus/vysshaya-liga/results/",
+			"enabled": true
+		},
+		{
+			"id": "blr-pershaya-liga-2025",
+			"country": "Беларусь",
+			"league": "Первая лига",
+			"season": "2025/2026",
+			"leagueLabel": "Беларусь: Первая лига",
+			"seasonUrl": "https://www.livescore.in/ru/football/belarus/pershaya-liga/results/",
+			"enabled": true
+		},
+		{
+			"id": "bel-jupiler-pro-league-2025",
+			"country": "Бельгия",
+			"league": "Высшая Лига",
+			"season": "2025/2026",
+			"leagueLabel": "Бельгия: Высшая Лига",
+			"seasonUrl": "https://www.livescore.in/ru/football/belgium/jupiler-pro-league/results/",
+			"enabled": true
+		},
+		{
+			"id": "bel-challenger-pro-league-2025",
+			"country": "Бельгия",
+			"league": "Челленджер Про Лига",
+			"season": "2025/2026",
+			"leagueLabel": "Бельгия: Челленджер Про Лига",
+			"seasonUrl": "https://www.livescore.in/ru/football/belgium/challenger-pro-league/results/",
+			"enabled": true
+		},
+		{
+			"id": "bul-efbet-league-2025",
+			"country": "Болгария",
+			"league": "Первая Лига",
+			"season": "2025/2026",
+			"leagueLabel": "Болгария: Первая Лига",
+			"seasonUrl": "https://www.livescore.in/ru/football/bulgaria/efbet-league/results/",
+			"enabled": true
+		},
+		{
+			"id": "bul-vtora-liga-2025",
+			"country": "Болгария",
+			"league": "Вторая Лига",
+			"season": "2025/2026",
+			"leagueLabel": "Болгария: Вторая Лига",
+			"seasonUrl": "https://www.livescore.in/ru/football/bulgaria/vtora-liga/results/",
+			"enabled": true
+		},
+		{
+			"id": "bol-division-profesional-2025",
+			"country": "Боливия",
+			"league": "Дивизион Профессиональ",
+			"season": "2025/2026",
+			"leagueLabel": "Боливия: Дивизион Профессиональ",
+			"seasonUrl": "https://www.livescore.in/ru/football/bolivia/division-profesional/results/",
+			"enabled": true
+		},
+		{
+			"id": "bih-wwin-liga-bih-2025",
+			"country": "Босния и Герцеговина",
+			"league": "ВИН Лига БиХ",
+			"season": "2025/2026",
+			"leagueLabel": "Босния и Герцеговина: ВИН Лига БиХ",
+			"seasonUrl": "https://www.livescore.in/ru/football/bosnia-and-herzegovina/wwin-liga-bih/results/",
+			"enabled": true
+		},
+		{
+			"id": "bra-serie-a-betano-2025",
+			"country": "Бразилия",
+			"league": "Серия А Бетано",
+			"season": "2025/2026",
+			"leagueLabel": "Бразилия: Серия А Бетано",
+			"seasonUrl": "https://www.livescore.in/ru/football/brazil/serie-a-betano/results/",
+			"enabled": true
+		},
+		{
+			"id": "bra-serie-b-2025",
+			"country": "Бразилия",
+			"league": "Чемпионат Бразилии В",
+			"season": "2025/2026",
+			"leagueLabel": "Бразилия: Чемпионат Бразилии В",
+			"seasonUrl": "https://www.livescore.in/ru/football/brazil/serie-b/results/",
+			"enabled": true
+		},
+		{
+			"id": "bra-serie-c-2025",
+			"country": "Бразилия",
+			"league": "Чемпионат Бразилии С",
+			"season": "2025/2026",
+			"leagueLabel": "Бразилия: Чемпионат Бразилии С",
+			"seasonUrl": "https://www.livescore.in/ru/football/brazil/serie-c/results/",
+			"enabled": true
+		},
+		{
+			"id": "hun-nb-i-2025",
+			"country": "Венгрия",
+			"league": "NB I",
+			"season": "2025/2026",
+			"leagueLabel": "Венгрия: NB I",
+			"seasonUrl": "https://www.livescore.in/ru/football/hungary/nb-i/results/",
+			"enabled": true
+		},
+		{
+			"id": "hun-nb-ii-2025",
+			"country": "Венгрия",
+			"league": "NB II",
+			"season": "2025/2026",
+			"leagueLabel": "Венгрия: NB II",
+			"seasonUrl": "https://www.livescore.in/ru/football/hungary/nb-ii/results/",
+			"enabled": true
+		},
+		{
+			"id": "ven-liga-futve-2025",
+			"country": "Венесуэла",
+			"league": "Лига Футве",
+			"season": "2025/2026",
+			"leagueLabel": "Венесуэла: Лига Футве",
+			"seasonUrl": "https://www.livescore.in/ru/football/venezuela/liga-futve/results/",
+			"enabled": true
+		},
+		{
+			"id": "vnm-v-league-1-2025",
+			"country": "Вьетнам",
+			"league": "V-Лига 1",
+			"season": "2025/2026",
+			"leagueLabel": "Вьетнам: V-Лига 1",
+			"seasonUrl": "https://www.livescore.in/ru/football/vietnam/v-league-1/results/",
+			"enabled": true
+		},
+		{
+			"id": "gtm-liga-nacional-2025",
+			"country": "Гватемала",
+			"league": "Лига Националь",
+			"season": "2025/2026",
+			"leagueLabel": "Гватемала: Лига Националь",
+			"seasonUrl": "https://www.livescore.in/ru/football/guatemala/liga-nacional/results/",
+			"enabled": true
+		},
+		{
+			"id": "de-bundesliga-2025",
+			"country": "Германия",
+			"league": "Бундеслига",
+			"season": "2025/2026",
+			"leagueLabel": "Германия: Бундеслига",
+			"seasonUrl": "https://www.livescore.in/ru/football/germany/bundesliga/results/",
+			"enabled": true
+		},
+		{
+			"id": "de-2-bundesliga-2025",
+			"country": "Германия",
+			"league": "2-я Бундеслига",
+			"season": "2025/2026",
+			"leagueLabel": "Германия: 2-я Бундеслига",
+			"seasonUrl": "https://www.livescore.in/ru/football/germany/2-bundesliga/results/",
+			"enabled": true
+		},{
+			"id": "de-3-liga-2025",
+			"country": "Германия",
+			"league": "3-я Бундеслига",
+			"season": "2025/2026",
+			"leagueLabel": "Германия: 3-я Бундеслига",
+			"seasonUrl": "https://www.livescore.in/ru/football/germany/3-liga/results/",
+			"enabled": true
+		},
+		{
+			"id": "hnd-liga-nacional-2025",
+			"country": "Гондурас",
+			"league": "Национальная лига",
+			"season": "2025/2026",
+			"leagueLabel": "Гондурас: Национальная лига",
+			"seasonUrl": "https://www.livescore.in/ru/football/honduras/liga-nacional/results/",
+			"enabled": true
+		},
+		{
+			"id": "hkg-premier-league-2025",
+			"country": "Гонконг",
+			"league": "Премьер-лига",
+			"season": "2025/2026",
+			"leagueLabel": "Гонконг: Премьер-лига",
+			"seasonUrl": "https://www.livescore.in/ru/football/hong-kong/premier-league/results/",
+			"enabled": true
+		},
+		{
+			"id": "grc-super-league-2025",
+			"country": "Греция",
+			"league": "Суперлига",
+			"season": "2025/2026",
+			"leagueLabel": "Греция: Суперлига",
+			"seasonUrl": "https://www.livescore.in/ru/football/greece/super-league/results/",
+			"enabled": true
+		},
+		{
+			"id": "geo-crystalbet-erovnuli-liga-2025",
+			"country": "Грузия",
+			"league": "Кристалбет Еровнули Лига",
+			"season": "2025/2026",
+			"leagueLabel": "Грузия: Кристалбет Еровнули Лига",
+			"seasonUrl": "https://www.livescore.in/ru/football/georgia/crystalbet-erovnuli-liga/results/",
+			"enabled": true
+		},
+		{
+			"id": "geo-crystalbet-erovnuli-liga-2-2025",
+			"country": "Грузия",
+			"league": "Кристалбет Еровнули Лига 2",
+			"season": "2025/2026",
+			"leagueLabel": "Грузия: Кристалбет Еровнули Лига 2",
+			"seasonUrl": "https://www.livescore.in/ru/football/georgia/crystalbet-erovnuli-liga-2/results/",
+			"enabled": true
+		},
+		{
+			"id": "dnk-superliga-2025",
+			"country": "Дания",
+			"league": "Суперлига",
+			"season": "2025/2026",
+			"leagueLabel": "Дания: Суперлига",
+			"seasonUrl": "https://www.livescore.in/ru/football/denmark/superliga/results/",
+			"enabled": true
+		},
+		{
+			"id": "dnk-1st-division-2025",
+			"country": "Дания",
+			"league": "1-я дивизия",
+			"season": "2025/2026",
+			"leagueLabel": "Дания: 1-я дивизия",
+			"seasonUrl": "https://www.livescore.in/ru/football/denmark/1st-division/results/",
+			"enabled": true
+		},
+		{
+			"id": "isr-ligat-ha-al-2025",
+			"country": "Израиль",
+			"league": "Суперлига",
+			"season": "2025/2026",
+			"leagueLabel": "Израиль: Суперлига",
+			"seasonUrl": "https://www.livescore.in/ru/football/israel/ligat-ha-al/results/",
+			"enabled": true
+		},
+		{
+			"id": "ind-isl-2025",
+			"country": "Индия",
+			"league": "Суперлига",
+			"season": "2025/2026",
+			"leagueLabel": "Индия: Суперлига",
+			"seasonUrl": "https://www.livescore.in/ru/football/india/isl/results/",
+			"enabled": true
+		},
+		{
+			"id": "ind-i-league-2025",
+			"country": "Индия",
+			"league": "Первый Дивизион",
+			"season": "2025/2026",
+			"leagueLabel": "Индия: Первый Дивизион",
+			"seasonUrl": "https://www.livescore.in/ru/football/india/i-league/results/",
+			"enabled": true
+		},
+		{
+			"id": "idn-super-league-2025",
+			"country": "Индонезия",
+			"league": "Суперлига",
+			"season": "2025/2026",
+			"leagueLabel": "Индонезия: Суперлига",
+			"seasonUrl": "https://www.livescore.in/ru/football/indonesia/super-league/results/",
+			"enabled": true
+		},
+		{
+			"id": "idn-championship-2025",
+			"country": "Индонезия",
+			"league": "Чемпионшип",
+			"season": "2025/2026",
+			"leagueLabel": "Индонезия: Чемпионшип",
+			"seasonUrl": "https://www.livescore.in/ru/football/indonesia/championship/results/",
+			"enabled": true
+		},
+		{
+			"id": "irn-persian-gulf-pro-league-2025",
+			"country": "Иран",
+			"league": "Персидский Гульф Про Лига",
+			"season": "2025/2026",
+			"leagueLabel": "Иран: Персидский Гульф Про Лига",
+			"seasonUrl": "https://www.livescore.in/ru/football/iran/persian-gulf-pro-league/results/",
+			"enabled": true
+		},
+		{
+			"id": "irl-premier-division-2025",
+			"country": "Ирландия",
+			"league": "Премьер-дивизион",
+			"season": "2025/2026",
+			"leagueLabel": "Ирландия: Премьер-дивизион",
+			"seasonUrl": "https://www.livescore.in/ru/football/ireland/premier-division/results/",
+			"enabled": true
+		},
+		{
+			"id": "irl-division-1-2025",
+			"country": "Ирландия",
+			"league": "1-ый дивизион",
+			"season": "2025/2026",
+			"leagueLabel": "Ирландия: 1-ый дивизион",
+			"seasonUrl": "https://www.livescore.in/ru/football/ireland/division-1/results/",
+			"enabled": true
+		},
+		{
+			"id": "isl-besta-deild-karla-2025",
+			"country": "Исландия",
+			"league": "Бест-деild Карл",
+			"season": "2025/2026",
+			"leagueLabel": "Исландия: Бест-деild Карл",
+			"seasonUrl": "https://www.livescore.in/ru/football/iceland/besta-deild-karla/results/",
+			"enabled": true
+		},
+		{
+			"id": "isl-division-1-2025",
+			"country": "Исландия",
+			"league": "1-ый дивизион",
+			"season": "2025/2026",
+			"leagueLabel": "Исландия: 1-ый дивизион",
+			"seasonUrl": "https://www.livescore.in/ru/football/iceland/division-1/results/",
+			"enabled": true
+		},
+		{
+			"id": "esp-laliga-2025",
+			"country": "Испания",
+			"league": "Примера",
+			"season": "2025/2026",
+			"leagueLabel": "Испания: Примера",
+			"seasonUrl": "https://www.livescore.in/ru/football/spain/laliga/results/",
+			"enabled": true
+		},
+		{
+			"id": "esp-laliga2-2025",
+			"country": "Испания",
+			"league": "Сегунда",
+			"season": "2025/2026",
+			"leagueLabel": "Испания: Сегунда",
+			"seasonUrl": "https://www.livescore.in/ru/football/spain/laliga2/results/",
+			"enabled": true
+		},
+		{
+			"id": "esp-primera-rfef-group-1-2025",
+			"country": "Испания",
+			"league": "Первая RFEF Группа 1",
+			"season": "2025/2026",
+			"leagueLabel": "Испания: Первая RFEF Группа 1",
+			"seasonUrl": "https://www.livescore.in/ru/football/spain/primera-rfef-group-1/results/",
+			"enabled": true
+		},
+		{
+			"id": "esp-primera-rfef-group-2-2025",
+			"country": "Испания",
+			"league": "Первая RFEF Группа 2",
+			"season": "2025/2026",
+			"leagueLabel": "Испания: Первая RFEF Группа 2",
+			"seasonUrl": "https://www.livescore.in/ru/football/spain/primera-rfef-group-2/results/",
+			"enabled": true
+		},
+		{
+			"id": "ita-serie-a-2025",
+			"country": "Италия",
+			"league": "Серия А",
+			"season": "2025/2026",
+			"leagueLabel": "Италия: Серия А",
+			"seasonUrl": "https://www.livescore.in/ru/football/italy/serie-a/results/",
+			"enabled": true
+		},
+		{
+			"id": "ita-serie-b-2025",
+			"country": "Италия",
+			"league": "Серия B",
+			"season": "2025/2026",
+			"leagueLabel": "Италия: Серия B",
+			"seasonUrl": "https://www.livescore.in/ru/football/italy/serie-b/results/",
+			"enabled": true
+		},
+		{
+			"id": "ita-serie-c-group-a-2025",
+			"country": "Италия",
+			"league": "Серия C Группа A",
+			"season": "2025/2026",
+			"leagueLabel": "Италия: Серия C Группа A",
+			"seasonUrl": "https://www.livescore.in/ru/football/italy/serie-c-group-a/results/",
+			"enabled": true
+		},
+		{
+			"id": "ita-serie-c-group-b-2025",
+			"country": "Италия",
+			"league": "Серия C Группа B",
+			"season": "2025/2026",
+			"leagueLabel": "Италия: Серия C Группа B",
+			"seasonUrl": "https://www.livescore.in/ru/football/italy/serie-c-group-b/results/",
+			"enabled": true
+		},
+		{
+			"id": "ita-serie-c-group-c-2025",
+			"country": "Италия",
+			"league": "Серия C Группа C",
+			"season": "2025/2026",
+			"leagueLabel": "Италия: Серия C Группа C",
+			"seasonUrl": "https://www.livescore.in/ru/football/italy/serie-c-group-c/results/",
+			"enabled": true
+		},
+		{
+			"id": "kaz-premier-league-2025",
+			"country": "Казахстан",
+			"league": "Премьер-лига",
+			"season": "2025/2026",
+			"leagueLabel": "Казахстан: Премьер-лига",
+			"seasonUrl": "https://www.livescore.in/ru/football/kazakhstan/premier-league/results/",
+			"enabled": true
+		},
+		{
+			"id": "khm-cpl-2025",
+			"country": "Камбоджа",
+			"league": "CPL",
+			"season": "2025/2026",
+			"leagueLabel": "Камбоджа: CPL",
+			"seasonUrl": "https://www.livescore.in/ru/football/cambodia/cpl/results/",
+			"enabled": true
+		},
+		{
+			"id": "can-canadian-premier-league-2025",
+			"country": "Канада",
+			"league": "Канадская Премьер-лига",
+			"season": "2025/2026",
+			"leagueLabel": "Канада: Канадская Премьер-лига",
+			"seasonUrl": "https://www.livescore.in/ru/football/canada/canadian-premier-league/results/",
+			"enabled": true
+		},
+		{
+			"id": "qat-qsl-2025",
+			"country": "Катар",
+			"league": "Лига Катар Старс",
+			"season": "2025/2026",
+			"leagueLabel": "Катар: Лига Катар Старс",
+			"seasonUrl": "https://www.livescore.in/ru/football/qatar/qsl/results/",
+			"enabled": true
+		},
+		{
+			"id": "cyp-cyprus-league-2025",
+			"country": "Кипр",
+			"league": "Кипрская Лига",
+			"season": "2025/2026",
+			"leagueLabel": "Кипр: Кипрская Лига",
+			"seasonUrl": "https://www.livescore.in/ru/football/cyprus/cyprus-league/results/",
+			"enabled": true
+		},
+		{
+			"id": "chn-super-league-2025",
+			"country": "Китай",
+			"league": "Суперлига",
+			"season": "2025/2026",
+			"leagueLabel": "Китай: Суперлига",
+			"seasonUrl": "https://www.livescore.in/ru/football/china/super-league/results/",
+			"enabled": true
+		},
+		{
+			"id": "chn-league-one-2025",
+			"country": "Китай",
+			"league": "Лига Один",
+			"season": "2025/2026",
+			"leagueLabel": "Китай: Лига Один",
+			"seasonUrl": "https://www.livescore.in/ru/football/china/league-one/results/",
+			"enabled": true
+		},
+		{
+			"id": "chn-league-two-2025",
+			"country": "Китай",
+			"league": "Лига Два",
+			"season": "2025/2026",
+			"leagueLabel": "Китай: Лига Два",
+			"seasonUrl": "https://www.livescore.in/ru/football/china/league-two/results/",
+			"enabled": true
+		},
+		{
+			"id": "col-primera-a-2025",
+			"country": "Колумбия",
+			"league": "Примера A",
+			"season": "2025/2026",
+			"leagueLabel": "Колумбия: Примера A",
+			"seasonUrl": "https://www.livescore.in/ru/football/colombia/primera-a/results/",
+			"enabled": true
+		},
+		{
+			"id": "col-primera-b-2025",
+			"country": "Колумбия",
+			"league": "Примера Б",
+			"season": "2025/2026",
+			"leagueLabel": "Колумбия: Примера Б",
+			"seasonUrl": "https://www.livescore.in/ru/football/colombia/primera-b/results/",
+			"enabled": true
+		},
+		{
+			"id": "cri-primera-division-2025",
+			"country": "Коста-Рика",
+			"league": "Высший Дивизион",
+			"season": "2025/2026",
+			"leagueLabel": "Коста-Рика: Высший Дивизион",
+			"seasonUrl": "https://www.livescore.in/ru/football/costa-rica/primera-division/results/",
+			"enabled": true
+		},
+		{
+			"id": "lat-virsliga-2025",
+			"country": "Латвия",
+			"league": "Вирслага",
+			"season": "2025/2026",
+			"leagueLabel": "Латвия: Вирслага",
+			"seasonUrl": "https://www.livescore.in/ru/football/latvia/virsliga/results/",
+			"enabled": true
+		},
+		{
+			"id": "ltu-toplyga-2025",
+			"country": "Литва",
+			"league": "Топлига",
+			"season": "2025/2026",
+			"leagueLabel": "Литва: Топлига",
+			"seasonUrl": "https://www.livescore.in/ru/football/lithuania/toplyga/results/",
+			"enabled": true
+		},
+		{
+			"id": "mya-super-league-2025",
+			"country": "Малайзия",
+			"league": "Суперлига",
+			"season": "2025/2026",
+			"leagueLabel": "Малайзия: Суперлига",
+			"seasonUrl": "https://www.livescore.in/ru/football/malaysia/super-league/results/",
+			"enabled": true
+		},
+		{
+			"id": "mlt-premier-league-2025",
+			"country": "Мальта",
+			"league": "Премьер-лига",
+			"season": "2025/2026",
+			"leagueLabel": "Мальта: Премьер-лига",
+			"seasonUrl": "https://www.livescore.in/ru/football/malta/premier-league/results/",
+			"enabled": true
+		},
+		{
+			"id": "mex-liga-mx-2025",
+			"country": "Мексика",
+			"league": "Лига MX",
+			"season": "2025/2026",
+			"leagueLabel": "Мексика: Лига MX",
+			"seasonUrl": "https://www.livescore.in/ru/football/mexico/liga-mx/results/",
+			"enabled": true
+		},
+		{
+			"id": "mex-liga-de-expansion-mx-2025",
+			"country": "Мексика",
+			"league": "Лига де Экспансион MX",
+			"season": "2025/2026",
+			"leagueLabel": "Мексика: Лига де Экспансион MX",
+			"seasonUrl": "https://www.livescore.in/ru/football/mexico/liga-de-expansion-mx/results/",
+			"enabled": true
+		},
+		{
+			"id": "ned-eredivisie-2025",
+			"country": "Нидерланды",
+			"league": "Высшая Лига",
+			"season": "2025/2026",
+			"leagueLabel": "Нидерланды: Высшая Лига",
+			"seasonUrl": "https://www.livescore.in/ru/football/netherlands/eredivisie/results/",
+			"enabled": true
+		},
+		{
+			"id": "ned-eerste-divisie-2025",
+			"country": "Нидерланды",
+			"league": "Первый Дивизион",
+			"season": "2025/2026",
+			"leagueLabel": "Нидерланды: Первый Дивизион",
+			"seasonUrl": "https://www.livescore.in/ru/football/netherlands/eerste-divisie/results/",
+			"enabled": true
+		},
+		{
+			"id": "ned-tweede-divisie-2025",
+			"country": "Нидерланды",
+			"league": "Второй Дивизион",
+			"season": "2025/2026",
+			"leagueLabel": "Нидерланды: Второй Дивизион",
+			"seasonUrl": "https://www.livescore.in/ru/football/netherlands/tweede-divisie/results/",
+			"enabled": true
+		}
+	]
+}

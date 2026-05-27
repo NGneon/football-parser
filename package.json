@@ -1,0 +1,26 @@
+{
+	"name": "football-parser",
+	"version": "1.0.0",
+	"description": "Парсер футбольной статистики с livescore.in",
+	"main": "parser.js",
+	"scripts": {
+		"start": "node parser.js",
+		"web": "node server.js",
+		"preload": "node scripts/preload-all.js",
+		"preload-league": "node scripts/preload-league.js",
+		"preload-premier": "node scripts/preload-league.js eng-premier-2024",
+		"refresh-lineups": "node scripts/refresh-lineups.js",
+		"refresh-goals": "node scripts/refresh-goals.js",
+		"backfill-goals": "node scripts/refresh-goals.js",
+		"add-league": "node scripts/add-league.js",
+		"compute-ppg": "node scripts/compute-ppg.js",
+		"recompute-goals": "node scripts/recompute-cumulative-goals.js"
+	},
+	"dependencies": {
+		"cli-progress": "^3.12.0",
+		"exceljs": "^4.4.0",
+		"express": "^4.22.2",
+		"playwright": "^1.40.0",
+		"xlsx": "^0.18.5"
+	}
+}

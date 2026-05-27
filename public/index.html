@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Football Parser — Livescore</title>
+	<link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+	<div class="app" id="app">
+		<div class="main">
+			<header class="toolbar">
+				<div class="toolbar-left">
+					<button type="button" class="btn-dropdown" id="btn-country" aria-expanded="false" aria-haspopup="listbox">
+						Страна <span class="arrow">▾</span>
+					</button>
+					<div class="country-dropdown hidden" id="country-dropdown" role="listbox">
+						<div class="country-tree" id="country-tree"></div>
+					</div>
+				</div>
+				<div class="toolbar-center">
+					<div class="filter-item filter-main">
+						<button type="button" class="filter-metric-btn" id="btn-ppg-metric" aria-expanded="false">
+							<span id="ppg-metric-label">PPG (TT)</span>
+							<span class="filter-chevron">▾</span>
+						</button>
+						<div class="metric-dropdown hidden" id="ppg-metric-dropdown">
+							<button type="button" data-metric="tt">PPG (TT)</button>
+							<button type="button" data-metric="ha">PPG (H/A)</button>
+						</div>
+						<input type="text" id="ppg-main" value="0" inputmode="decimal" />
+					</div>
+					<label class="filter-item">
+						<span>PPG (H/T)</span>
+						<input type="text" id="ppg-ht" value="0" inputmode="decimal" />
+					</label>
+					<label class="filter-item">
+						<span>PPG (S/T)</span>
+						<input type="text" id="ppg-st" value="0" inputmode="decimal" />
+					</label>
+				</div>
+				<div class="toolbar-right">
+					<button type="button" class="btn-date" id="btn-date">
+						<span class="cal-icon" aria-hidden="true"></span>
+						<span id="date-label">08.08.2008</span>
+					</button>
+					<div class="calendar-popup hidden" id="calendar-popup">
+						<div class="calendar-header">
+							<select id="cal-day"></select>
+							<select id="cal-month"></select>
+							<select id="cal-year"></select>
+						</div>
+						<div class="calendar-weekdays">
+							<span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span>
+							<span>Пт</span><span>Сб</span><span>Вс</span>
+						</div>
+						<div class="calendar-actions">
+							<button type="button" class="btn-reset" id="btn-reset-date">Все матчи</button>
+						</div>
+						<div class="calendar-grid" id="calendar-grid"></div>
+					</div>
+				</div>
+			</header>
+
+			<div class="content" id="matches-container">
+				<p class="loading">Загрузка данных...</p>
+			</div>
+		</div>
+	</div>
+
+	<script src="/js/app.js"></script>
+</body>
+</html>

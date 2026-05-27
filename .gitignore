@@ -1,0 +1,29 @@
+node_modules/
+
+# Playwright
+playwright-report/
+test-results/
+.cache/
+
+# Local data (generated)
+data/leagues/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Cursor local artifacts
+.cursor/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Env
+.env
+.env.*
+
