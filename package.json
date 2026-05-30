@@ -14,9 +14,13 @@
 		"backfill-goals": "node scripts/refresh-goals.js",
 		"add-league": "node scripts/add-league.js",
 		"compute-ppg": "node scripts/compute-ppg.js",
-		"recompute-goals": "node scripts/recompute-cumulative-goals.js"
+		"recompute-goals": "node scripts/recompute-cumulative-goals.js",
+		"db:import": "node scripts/db-import.js",
+		"reapply-goals": "node scripts/reapply-lineup-goals.js",
+		"clean-bracket": "node scripts/clean-bracket-matches.js"
 	},
 	"dependencies": {
+		"better-sqlite3": "^11.10.0",
 		"cli-progress": "^3.12.0",
 		"exceljs": "^4.4.0",
 		"express": "^4.22.2",

@@ -30,14 +30,28 @@
 						</div>
 						<input type="text" id="ppg-main" value="0" inputmode="decimal" />
 					</div>
-					<label class="filter-item">
-						<span>PPG (H/T)</span>
+					<div class="filter-item filter-sub">
+						<button type="button" class="filter-metric-btn filter-metric-btn-sm" id="btn-ppg-ht-metric" aria-expanded="false">
+							<span id="ppg-ht-metric-label">H/T</span>
+							<span class="filter-chevron">▾</span>
+						</button>
+						<div class="metric-dropdown metric-dropdown-sm hidden" id="ppg-ht-metric-dropdown">
+							<button type="button" data-metric="ht">PPG (H/T)</button>
+							<button type="button" data-metric="ha">PPG (H/A)</button>
+						</div>
 						<input type="text" id="ppg-ht" value="0" inputmode="decimal" />
-					</label>
-					<label class="filter-item">
-						<span>PPG (S/T)</span>
+					</div>
+					<div class="filter-item filter-sub">
+						<button type="button" class="filter-metric-btn filter-metric-btn-sm" id="btn-ppg-st-metric" aria-expanded="false">
+							<span id="ppg-st-metric-label">S/T</span>
+							<span class="filter-chevron">▾</span>
+						</button>
+						<div class="metric-dropdown metric-dropdown-sm hidden" id="ppg-st-metric-dropdown">
+							<button type="button" data-metric="st">PPG (S/T)</button>
+							<button type="button" data-metric="ha">PPG (H/A)</button>
+						</div>
 						<input type="text" id="ppg-st" value="0" inputmode="decimal" />
-					</label>
+					</div>
 				</div>
 				<div class="toolbar-right">
 					<button type="button" class="btn-date" id="btn-date">

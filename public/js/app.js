@@ -61,9 +61,16 @@ const PPG_ROWS = [
 ]
 
 const PPG_ROW_COUNT = PPG_ROWS.length
-const METRIC_LABELS = { tt: 'PPG (TT)', ha: 'PPG (H/A)' }
+const METRIC_LABELS = {
+	tt: 'PPG (TT)',
+	ha: 'PPG (H/A)',
+	ht: 'PPG (H/T)',
+	st: 'PPG (S/T)',
+}
 
 let mainPpgMetric = 'tt'
+let htPpgMetric = 'ht'
+let stPpgMetric = 'st'
 
 const ppgMainInput = document.getElementById('ppg-main')
 const ppgHtInput = document.getElementById('ppg-ht')
@@ -91,8 +98,8 @@ function passesPpgFilters(match) {
 	const stMin = parseFilterValue(ppgStInput)
 
 	if (mainMin > 0 && getPpgGapNum(match, mainPpgMetric) < mainMin) return false
-	if (htMin > 0 && getPpgGapNum(match, 'ht') < htMin) return false
-	if (stMin > 0 && getPpgGapNum(match, 'st') < stMin) return false
+	if (htMin > 0 && getPpgGapNum(match, htPpgMetric) < htMin) return false
+	if (stMin > 0 && getPpgGapNum(match, stPpgMetric) < stMin) return false
 	return true
 }
 
@@ -315,12 +322,21 @@ function renderMatchBlock(match) {
 		</tr>`
 	}).join('')
 
-	const ownGoalsNote =
-		match.ownGoals?.length > 0
-			? `<div class="match-own-goals">Автогол (не в счёт): ${match.ownGoals
-					.map(og => `${og.half === 1 ? '1-й' : '2-й'} тайм, ${og.minute}'`)
-					.join('; ')}</div>`
-			: ''
+	const status = match.status || 'finished'
+	const statusText =
+		{
+			finished: 'Завершён',
+			scheduled: 'Не начался',
+			live: 'Идёт',
+			postponed: 'Перенесён',
+			cancelled: 'Отменён',
+			unknown: 'Статус неизвестен',
+		}[status] || status
+
+	const showSync = status !== 'finished'
+	const syncBtn = showSync
+		? `<button type="button" class="btn-sync" data-match-id="${escapeHtml(match.id)}">Синхронизировать</button>`
+		: ''
 
 	let scoreCell
 	if (match.time) {
@@ -338,9 +354,11 @@ function renderMatchBlock(match) {
 	}
 
 	return `
-	<article class="match-block" data-id="${escapeHtml(match.id)}" data-date="${escapeHtml(match.date)}">
+	<article class="match-block" data-id="${escapeHtml(match.id)}" data-date="${escapeHtml(match.date)}" data-status="${escapeHtml(status)}">
 		<div class="match-league-bar">
 			<span>${escapeHtml(match.leagueLabel || `${allData.meta.country}: ${allData.meta.league}`)}</span>
+			<span class="match-status match-status-${escapeHtml(status)}">${escapeHtml(statusText)}</span>
+			${syncBtn}
 			${openLink}
 		</div>
 		<table class="match-table">
@@ -366,7 +384,6 @@ function renderMatchBlock(match) {
 			</thead>
 			<tbody>${ppgBody}</tbody>
 		</table>
-		${ownGoalsNote}
 	</article>`
 }
 
@@ -434,6 +451,29 @@ function renderMatches() {
 			const key = `${link.dataset.id}-${link.dataset.side}`
 			expandedLineups.add(key)
 			renderMatches()
+		})
+	})
+
+	container.querySelectorAll('.btn-sync').forEach(btn => {
+		btn.addEventListener('click', async () => {
+			const id = btn.dataset.matchId
+			btn.disabled = true
+			btn.textContent = 'Синхронизация…'
+			try {
+				const res = await fetch(`/api/matches/${encodeURIComponent(id)}/sync`, {
+					method: 'POST',
+				})
+				const data = await res.json()
+				if (!res.ok) throw new Error(data.error || res.statusText)
+				const idx = allData.matches.findIndex(m => m.id === id)
+				if (idx >= 0) allData.matches[idx] = data.match
+				await reloadData()
+				renderMatches()
+			} catch (err) {
+				alert(`Ошибка синхронизации: ${err.message}`)
+				btn.disabled = false
+				btn.textContent = 'Синхронизировать'
+			}
 		})
 	})
 }
@@ -604,10 +644,49 @@ function selectMainMetric(metric) {
 	ppgMetricDropdown?.querySelectorAll('button').forEach(btn => {
 		btn.classList.toggle('active', btn.dataset.metric === metric)
 	})
-	if (ppgHtInput) ppgHtInput.value = '0'
-	if (ppgStInput) ppgStInput.value = '0'
 	setMetricDropdownOpen(false)
 	renderMatches()
+}
+
+function initSubMetricDropdown({
+	btnId,
+	dropdownId,
+	labelId,
+	getMetric,
+	setMetric,
+}) {
+	const btn = document.getElementById(btnId)
+	const dropdown = document.getElementById(dropdownId)
+	const label = document.getElementById(labelId)
+	if (!btn || !dropdown) return
+
+	const refresh = () => {
+		const m = getMetric()
+		if (label) label.textContent = METRIC_LABELS[m] || m
+		dropdown.querySelectorAll('button').forEach(b => {
+			b.classList.toggle('active', b.dataset.metric === m)
+		})
+	}
+
+	dropdown.querySelectorAll('button').forEach(b => {
+		b.addEventListener('click', e => {
+			e.stopPropagation()
+			setMetric(b.dataset.metric)
+			dropdown.classList.add('hidden')
+			refresh()
+			renderMatches()
+		})
+	})
+
+	btn.addEventListener('click', e => {
+		e.stopPropagation()
+		dropdown.classList.toggle('hidden')
+		setMetricDropdownOpen(false)
+		setCountryDropdownOpen(false)
+	})
+
+	dropdown.addEventListener('click', e => e.stopPropagation())
+	refresh()
 }
 
 function initPpgFilters() {
@@ -627,13 +706,27 @@ function initPpgFilters() {
 
 	ppgMetricDropdown?.addEventListener('click', e => e.stopPropagation())
 
-	const onMainChange = () => {
-		if (ppgHtInput) ppgHtInput.value = '0'
-		if (ppgStInput) ppgStInput.value = '0'
-		renderMatches()
-	}
+	initSubMetricDropdown({
+		btnId: 'btn-ppg-ht-metric',
+		dropdownId: 'ppg-ht-metric-dropdown',
+		labelId: 'ppg-ht-metric-label',
+		getMetric: () => htPpgMetric,
+		setMetric: m => {
+			htPpgMetric = m
+		},
+	})
 
-	ppgMainInput?.addEventListener('input', onMainChange)
+	initSubMetricDropdown({
+		btnId: 'btn-ppg-st-metric',
+		dropdownId: 'ppg-st-metric-dropdown',
+		labelId: 'ppg-st-metric-label',
+		getMetric: () => stPpgMetric,
+		setMetric: m => {
+			stPpgMetric = m
+		},
+	})
+
+	ppgMainInput?.addEventListener('input', renderMatches)
 	ppgHtInput?.addEventListener('input', renderMatches)
 	ppgStInput?.addEventListener('input', renderMatches)
 }

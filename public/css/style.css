@@ -438,6 +438,62 @@ body {
 	font-size: 10px;
 }
 
+.match-status {
+	font-size: 10px;
+	padding: 1px 6px;
+	border-radius: 3px;
+	background: #e8e8e8;
+	margin-left: 8px;
+}
+
+.match-status-scheduled,
+.match-status-live {
+	background: #fff3cd;
+	font-weight: bold;
+}
+
+.match-status-postponed,
+.match-status-cancelled {
+	background: #f8d7da;
+}
+
+.btn-sync {
+	margin-left: auto;
+	margin-right: 8px;
+	padding: 2px 8px;
+	font-size: 10px;
+	cursor: pointer;
+	border: 1px solid #4a6fa5;
+	background: #5b8fd9;
+	color: #fff;
+	border-radius: 3px;
+}
+
+.btn-sync:hover:not(:disabled) {
+	background: #4a7ec8;
+}
+
+.btn-sync:disabled {
+	opacity: 0.6;
+	cursor: wait;
+}
+
+.filter-sub {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.filter-metric-btn-sm {
+	font-size: 10px;
+	padding: 2px 6px;
+	min-width: 52px;
+}
+
+.metric-dropdown-sm {
+	min-width: 120px;
+}
+
 .match-league-bar a:hover {
 	text-decoration: underline;
 }

@@ -4,8 +4,18 @@ const path = require('path')
 const { attachPpgToMatches } = require('./lib/ppg')
 const { attachCumulativeGoalsToMatches } = require('./lib/cumulative-goals')
 const { sortMatchesByLeagueOrder } = require('./lib/match-order')
+const {
+	loadAllFromDb,
+	isDbEnabled,
+	getDbPath,
+	importLeagueData,
+	requireDb,
+	initSchema,
+} = require('./lib/db')
+const { syncSingleMatch } = require('./lib/sync-match')
 
 const app = express()
+app.use(express.json())
 const PORT = process.env.PORT || 3000
 const CONFIG_PATH = path.join(__dirname, 'data/leagues.config.json')
 const LEAGUES_DIR = path.join(__dirname, 'data/leagues')
@@ -29,8 +39,12 @@ function readLeagueFile(filePath) {
 	}
 }
 
-/** Все загруженные файлы лиг (data/leagues/*.json + legacy) */
+/** Все загруженные файлы лиг (SQLite или data/leagues/*.json) */
 function loadAllLeagueFiles() {
+	if (isDbEnabled()) {
+		return loadAllFromDb()
+	}
+
 	const files = []
 
 	if (fs.existsSync(LEAGUES_DIR)) {
@@ -180,6 +194,62 @@ app.get('/api/matches', (req, res) => {
 	res.json({ matches })
 })
 
+app.post('/api/matches/:id/sync', async (req, res) => {
+	try {
+		const matchId = req.params.id
+		const loaded = loadAllLeagueFiles()
+		let found = null
+		let fileData = null
+
+		for (const file of loaded) {
+			const m = file.matches.find(x => x.id === matchId)
+			if (m) {
+				found = m
+				fileData = file
+				break
+			}
+		}
+
+		if (!found) {
+			return res.status(404).json({ error: 'Матч не найден' })
+		}
+
+		const result = await syncSingleMatch(found)
+		if (!result.ok) {
+			return res.status(400).json({ error: result.error })
+		}
+
+		const updated = result.match
+		const idx = fileData.matches.findIndex(x => x.id === matchId)
+		if (idx >= 0) fileData.matches[idx] = updated
+
+		if (isDbEnabled()) {
+			const db = requireDb()
+			initSchema(db)
+			importLeagueData(db, fileData)
+			db.close()
+		} else {
+			const leagueId = fileData.meta?.leagueId
+			if (leagueId) {
+				const fp = path.join(LEAGUES_DIR, `${leagueId}.json`)
+				const legacy =
+					leagueId === 'eng-premier-2024' ? LEGACY_FILE : null
+				const target = fs.existsSync(fp)
+					? fp
+					: legacy && fs.existsSync(legacy)
+						? legacy
+						: fp
+				fs.writeFileSync(target, JSON.stringify(fileData, null, 2), 'utf8')
+			}
+		}
+
+		res.json({ match: updated })
+	} catch (err) {
+		console.error(err)
+		res.status(500).json({ error: err.message })
+	}
+})
+
 app.get('/api/dates', (req, res) => {
 	const loaded = loadAllLeagueFiles()
 	const leagueIds = req.query.leagues
@@ -200,6 +270,9 @@ app.get('/api/dates', (req, res) => {
 
 const server = app.listen(PORT, () => {
 	console.log(`\n🌐 Веб-интерфейс: http://localhost:${PORT}`)
+	if (isDbEnabled()) {
+		console.log(`   📦 База SQLite: ${getDbPath()}`)
+	}
 	const loaded = loadAllLeagueFiles()
 	const total = loaded.reduce((n, f) => n + (f.matches?.length || 0), 0)
 	if (!total) {

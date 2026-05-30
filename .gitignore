@@ -7,6 +7,9 @@ test-results/
 
 # Local data (generated)
 data/leagues/
+data/football.db
+data/football.db-wal
+data/football.db-shm
 
 # OS / editor
 .DS_Store

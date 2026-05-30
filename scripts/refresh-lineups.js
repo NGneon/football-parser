@@ -10,7 +10,7 @@ const { chromium } = require('playwright')
 const { parseMatchFull, sleep } = require('../lib/livescore')
 const { attachCumulativeGoalsToMatches } = require('../lib/cumulative-goals')
 const { isBrokenMatch } = require('../lib/lineup-quality')
-const { isCompleteLineup } = require('../lib/lineups')
+const { hasUsableLineup } = require('../lib/lineups')
 
 const LEAGUES_DIR = path.join(__dirname, '../data/leagues')
 const LEGACY_PREMIER = path.join(__dirname, '../data/premier-league-2024-2025.json')
@@ -102,7 +102,7 @@ async function main() {
 						homePlayers: details.homeLineup,
 						awayPlayers: details.awayLineup,
 					}
-					if (isCompleteLineup(lineups)) {
+					if (hasUsableLineup(lineups)) {
 						match.homeLineup = details.homeLineup
 						match.awayLineup = details.awayLineup
 						fixed++
