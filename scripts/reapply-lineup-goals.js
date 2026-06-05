@@ -7,6 +7,7 @@ const fs = require('fs')
 const path = require('path')
 const { attachCumulativeGoalsToMatches } = require('../lib/cumulative-goals')
 const { attachPpgToMatches } = require('../lib/ppg')
+const { importLeagueData, isDbEnabled, requireDb, initSchema } = require('../lib/db')
 
 const LEAGUES_DIR = path.join(__dirname, '../data/leagues')
 const LEGACY = path.join(__dirname, '../data/premier-league-2024-2025.json')
@@ -17,9 +18,15 @@ function processFile(filePath) {
 	attachCumulativeGoalsToMatches(data.matches)
 	attachPpgToMatches(data.matches)
 	data.meta = data.meta || {}
-	data.meta.lineupGoalsMode = 'cumulative_after_match'
+	data.meta.lineupGoalsMode = 'cumulative_before_match'
 	data.meta.lineupGoalsUpdatedAt = new Date().toISOString()
 	fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8')
+	if (isDbEnabled()) {
+		const db = requireDb()
+		initSchema(db)
+		importLeagueData(db, data)
+		db.close()
+	}
 	return data.matches.length
 }
 
@@ -43,4 +50,4 @@ if (fs.existsSync(LEGACY)) {
 	files++
 }
 
-console.log(`\n✅ Обновлено: ${files} файлов, ${total} матчей (голы после матча)`)
+console.log(`\n✅ Обновлено: ${files} файлов, ${total} матчей (голы перед матчем)`)

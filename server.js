@@ -13,6 +13,7 @@ const {
 	initSchema,
 } = require('./lib/db')
 const { syncSingleMatch } = require('./lib/sync-match')
+const { enrichMatch, buildCalendarSummary } = require('./lib/match-normalize')
 
 const app = express()
 app.use(express.json())
@@ -20,6 +21,10 @@ const PORT = process.env.PORT || 3000
 const CONFIG_PATH = path.join(__dirname, 'data/leagues.config.json')
 const LEAGUES_DIR = path.join(__dirname, 'data/leagues')
 const LEGACY_FILE = path.join(__dirname, 'data/premier-league-2024-2025.json')
+
+// Простое кеширование для оптимизации загрузки из БД
+const apiCache = new Map()
+const CACHE_TTL = 60 * 1000 // 1 минута
 
 app.use(express.static(path.join(__dirname, 'public')))
 
@@ -108,9 +113,40 @@ function buildTree(config, loadedFiles) {
 	}))
 }
 
+// Функции для работы с кешем
+function getCacheKey(type, params) {
+	return `${type}:${JSON.stringify(params || {})}`
+}
+
+function getCachedData(key) {
+	const entry = apiCache.get(key)
+	if (!entry) return null
+	if (Date.now() - entry.timestamp > CACHE_TTL) {
+		apiCache.delete(key)
+		return null
+	}
+	return entry.data
+}
+
+function setCachedData(key, data) {
+	apiCache.set(key, { data, timestamp: Date.now() })
+}
+
+function clearCache() {
+	apiCache.clear()
+}
+
 function mergeMatches(loadedFiles, leagueIds) {
 	const ids = leagueIds?.length ? new Set(leagueIds) : null
 	const matches = []
+	const seasonByLeague = new Map()
+
+	for (const file of loadedFiles) {
+		const fileId = file.meta?.leagueId
+		if (fileId && file.meta?.season) {
+			seasonByLeague.set(fileId, file.meta.season)
+		}
+	}
 
 	for (const file of loadedFiles) {
 		const fileId = file.meta?.leagueId
@@ -118,16 +154,20 @@ function mergeMatches(loadedFiles, leagueIds) {
 		if (ids && !fileId) continue
 
 		for (const m of file.matches) {
-			const row = {
-				...m,
-				leagueId: m.leagueId || fileId,
-				country: m.country || file.meta?.country,
-				league: m.league || file.meta?.league,
-				leagueLabel:
-					m.leagueLabel ||
-					file.meta?.leagueLabel ||
-					`${file.meta?.country}: ${file.meta?.league}`,
-			}
+			const row = enrichMatch(
+				{
+					...m,
+					leagueId: m.leagueId || fileId,
+					country: m.country || file.meta?.country,
+					league: m.league || file.meta?.league,
+					season: m.season || file.meta?.season,
+					leagueLabel:
+						m.leagueLabel ||
+						file.meta?.leagueLabel ||
+						`${file.meta?.country}: ${file.meta?.league}`,
+				},
+				seasonByLeague.get(m.leagueId || fileId) || file.meta?.season,
+			)
 			matches.push(row)
 		}
 	}
@@ -151,24 +191,43 @@ app.get('/api/config', (req, res) => {
 })
 
 app.get('/api/tree', (req, res) => {
+	// Проверяем кеш
+	const cacheKey = getCacheKey('tree', {})
+	const cached = getCachedData(cacheKey)
+	if (cached) {
+		return res.json(cached)
+	}
+
 	const config = loadLeaguesConfig()
 	const loaded = loadAllLeagueFiles()
-	res.json({
+	const response = {
 		tree: buildTree(config, loaded),
 		loadedLeagueIds: loaded.map(f => f.meta?.leagueId).filter(Boolean),
-	})
+	}
+
+	// Сохраняем в кеш
+	setCachedData(cacheKey, response)
+
+	res.json(response)
 })
 
 app.get('/api/league', (req, res) => {
-	const loaded = loadAllLeagueFiles()
 	const leagueIds = req.query.leagues
 		? req.query.leagues.split(',').filter(Boolean)
-		: loaded.map(f => f.meta?.leagueId).filter(Boolean)
+		: []
 
-	const matches = mergeMatches(loaded, leagueIds)
+	// Проверяем кеш
+	const cacheKey = getCacheKey('league', { leagueIds })
+	const cached = getCachedData(cacheKey)
+	if (cached) {
+		return res.json(cached)
+	}
+
+	const loaded = loadAllLeagueFiles()
+	const matches = leagueIds.length ? mergeMatches(loaded, leagueIds) : []
 	const config = loadLeaguesConfig()
 
-	res.json({
+	const response = {
 		meta: {
 			leagueCount: loaded.length,
 			matchCount: matches.length,
@@ -176,7 +235,12 @@ app.get('/api/league', (req, res) => {
 		},
 		tree: buildTree(config, loaded),
 		matches,
-	})
+	}
+
+	// Сохраняем в кеш
+	setCachedData(cacheKey, response)
+
+	res.json(response)
 })
 
 app.get('/api/matches', (req, res) => {
@@ -243,6 +307,9 @@ app.post('/api/matches/:id/sync', async (req, res) => {
 			}
 		}
 
+		// Очищаем кеш после синхронизации
+		clearCache()
+
 		res.json({ match: updated })
 	} catch (err) {
 		console.error(err)
@@ -251,21 +318,28 @@ app.post('/api/matches/:id/sync', async (req, res) => {
 })
 
 app.get('/api/dates', (req, res) => {
-	const loaded = loadAllLeagueFiles()
 	const leagueIds = req.query.leagues
 		? req.query.leagues.split(',').filter(Boolean)
 		: null
 
-	const matches = mergeMatches(loaded, leagueIds)
-	const dates = [...new Set(matches.map(m => m.date).filter(Boolean))]
+	// Проверяем кеш
+	const cacheKey = getCacheKey('dates', { leagueIds })
+	const cached = getCachedData(cacheKey)
+	if (cached) {
+		return res.json(cached)
+	}
 
-	res.json(
-		dates.sort((a, b) => {
-			const [da, ma, ya] = a.split('.').map(Number)
-			const [db, mb, yb] = b.split('.').map(Number)
-			return new Date(ya, ma - 1, da) - new Date(yb, mb - 1, db)
-		}),
-	)
+	const loaded = loadAllLeagueFiles()
+	const matches = leagueIds?.length
+		? mergeMatches(loaded, leagueIds)
+		: []
+
+	const response = buildCalendarSummary(matches)
+
+	// Сохраняем в кеш
+	setCachedData(cacheKey, response)
+
+	res.json(response)
 })
 
 const server = app.listen(PORT, () => {

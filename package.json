@@ -10,6 +10,7 @@
 		"preload-league": "node scripts/preload-league.js",
 		"preload-premier": "node scripts/preload-league.js eng-premier-2024",
 		"refresh-lineups": "node scripts/refresh-lineups.js",
+		"refresh-all-lineups": "node scripts/refresh-all-lineups.js",
 		"refresh-goals": "node scripts/refresh-goals.js",
 		"backfill-goals": "node scripts/refresh-goals.js",
 		"add-league": "node scripts/add-league.js",

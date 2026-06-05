@@ -1,8 +1,9 @@
 /**
- * Дозагрузка стартовых составов (11+11) для матчей с битыми/пустыми lineup в JSON.
+ * Дозагрузка полных составов (старт + запас) для всех лиг с неполными данными.
  *
- *   node scripts/refresh-lineups.js eng-premier-2024
- *   $env:LIMIT=20; node scripts/refresh-lineups.js eng-premier-2024
+ *   npm run refresh-all-lineups
+ *   $env:LIMIT=50; npm run refresh-all-lineups
+ *   $env:LEAGUE_ID=eng-premier-2025; npm run refresh-all-lineups
  */
 const fs = require('fs')
 const path = require('path')
@@ -17,7 +18,7 @@ const LEAGUES_DIR = path.join(__dirname, '../data/leagues')
 const LEGACY_PREMIER = path.join(__dirname, '../data/premier-league-2024-2025.json')
 const CONCURRENT = parseInt(process.env.CONCURRENT || '4', 10)
 const LIMIT = process.env.LIMIT ? parseInt(process.env.LIMIT, 10) : 0
-const ALL = process.env.ALL === '1'
+const ONLY_LEAGUE = process.env.LEAGUE_ID || process.argv[2] || ''
 
 function resolveDataFile(leagueId) {
 	const primary = path.join(LEAGUES_DIR, `${leagueId}.json`)
@@ -28,33 +29,34 @@ function resolveDataFile(leagueId) {
 	return null
 }
 
-async function main() {
-	const leagueId = process.argv[2] || process.env.LEAGUE_ID
-	if (!leagueId) {
-		console.error('Укажите id лиги: node scripts/refresh-lineups.js eng-premier-2024')
-		process.exit(1)
+function saveLeague(data, dataFile) {
+	attachCumulativeGoalsToMatches(data.matches)
+	fs.writeFileSync(dataFile, JSON.stringify(data, null, 2), 'utf8')
+	if (isDbEnabled()) {
+		const db = requireDb()
+		initSchema(db)
+		importLeagueData(db, data)
+		db.close()
 	}
+}
 
+async function refreshLeague(leagueId) {
 	const dataFile = resolveDataFile(leagueId)
 	if (!dataFile) {
-		console.error(`Файл лиги не найден: ${leagueId}`)
-		process.exit(1)
+		console.warn(`⏭ ${leagueId} — файл не найден`)
+		return { fixed: 0, skipped: 0 }
 	}
 
 	const data = JSON.parse(fs.readFileSync(dataFile, 'utf8'))
-	let matches = data.matches.filter(m => m.url)
-	if (!ALL) matches = matches.filter(isIncompleteMatch)
+	let matches = data.matches.filter(m => m.url && isIncompleteMatch(m))
 	if (LIMIT > 0) matches = matches.slice(0, LIMIT)
 
-	console.log(`Файл: ${dataFile}`)
-	console.log(
-		`Составы: ${matches.length} матчей (${leagueId})${ALL ? ' [все]' : ' [только битые]'}\n`,
-	)
-
 	if (!matches.length) {
-		console.log('Нет матчей для обновления.')
-		return
+		console.log(`✓ ${leagueId} — неполных составов нет`)
+		return { fixed: 0, skipped: 0 }
 	}
+
+	console.log(`\n========== ${leagueId}: ${matches.length} матчей ==========`)
 
 	const browser = await chromium.launch({
 		headless: process.env.HEADLESS !== '0',
@@ -85,19 +87,28 @@ async function main() {
 						score2: match.score2,
 						team1: match.homeTeam,
 						team2: match.awayTeam,
+						matchTime: match.time,
+						statusStage: match.statusStage || '',
 					})
 
-					match.firstHalfHome = details.firstHalfHome
-					match.firstHalfAway = details.firstHalfAway
-					match.secondHalfHome = details.secondHalfHome
-					match.secondHalfAway = details.secondHalfAway
-					const ht = `${details.firstHalfHome}-${details.firstHalfAway}`
-					const ft = `${match.score1}-${match.score2}`
-					const st = `${details.secondHalfHome}-${details.secondHalfAway}`
-					match.scoreDisplay = `(${ft}) ${ht} | ${st}`
-					match.homeGoals = details.homeGoals
-					match.awayGoals = details.awayGoals
-					match.ownGoals = details.ownGoals
+					if (details.skippedBracket) return
+
+					if (details.status) match.status = details.status
+					match.parseSkipped = details.parseSkipped || false
+
+					if (details.status === 'finished') {
+						match.firstHalfHome = details.firstHalfHome
+						match.firstHalfAway = details.firstHalfAway
+						match.secondHalfHome = details.secondHalfHome
+						match.secondHalfAway = details.secondHalfAway
+						const ht = `${details.firstHalfHome}-${details.firstHalfAway}`
+						const ft = `${match.score1}-${match.score2}`
+						const st = `${details.secondHalfHome}-${details.secondHalfAway}`
+						match.scoreDisplay = `(${ft}) ${ht} | ${st}`
+						match.homeGoals = details.homeGoals
+						match.awayGoals = details.awayGoals
+						match.ownGoals = details.ownGoals
+					}
 
 					const lineups = {
 						homePlayers: details.homeLineup,
@@ -109,9 +120,6 @@ async function main() {
 						fixed++
 					} else {
 						stillBroken++
-						console.warn(
-							`  ⚠ пропуск сохранения: ${lineups.homePlayers?.length || 0}/11 — ${lineups.awayPlayers?.length || 0}/11`,
-						)
 					}
 				} finally {
 					await page.close()
@@ -119,27 +127,39 @@ async function main() {
 			}),
 		)
 
-		if (i > 0 && i % 40 === 0) {
-			attachCumulativeGoalsToMatches(data.matches)
-			fs.writeFileSync(dataFile, JSON.stringify(data, null, 2), 'utf8')
-		}
+		if (i > 0 && i % 40 === 0) saveLeague(data, dataFile)
 		await sleep(250)
 	}
 
 	data.meta = data.meta || {}
 	data.meta.lineupsRefreshedAt = new Date().toISOString()
-	attachCumulativeGoalsToMatches(data.matches)
-	fs.writeFileSync(dataFile, JSON.stringify(data, null, 2), 'utf8')
-	if (isDbEnabled()) {
-		const db = requireDb()
-		initSchema(db)
-		importLeagueData(db, data)
-		db.close()
-	}
+	saveLeague(data, dataFile)
 	await browser.close()
 
-	console.log(`\n✅ Готово: ${dataFile}`)
-	console.log(`   Исправлено: ${fixed}, всё ещё битые: ${stillBroken}`)
+	console.log(`✅ ${leagueId}: исправлено ${fixed}, ещё неполных ${stillBroken}`)
+	return { fixed, skipped: stillBroken }
+}
+
+async function main() {
+	const leagueIds = ONLY_LEAGUE
+		? [ONLY_LEAGUE]
+		: fs
+				.readdirSync(LEAGUES_DIR)
+				.filter(f => f.endsWith('.json'))
+				.map(f => f.replace('.json', ''))
+
+	let totalFixed = 0
+	let totalSkipped = 0
+
+	for (const id of leagueIds) {
+		const { fixed, skipped } = await refreshLeague(id)
+		totalFixed += fixed
+		totalSkipped += skipped
+	}
+
+	console.log(`\n——— Итог ———`)
+	console.log(`✅ Исправлено: ${totalFixed}`)
+	console.log(`⚠ Ещё неполных: ${totalSkipped}`)
 }
 
 main().catch(err => {

@@ -13,13 +13,37 @@ const MONTHS_RU = [
 	'Декабрь',
 ]
 
+/** Управление загруженным экраном */
+function showLoadingOverlay(text = 'Загрузка данных...') {
+	const overlay = document.getElementById('loading-overlay')
+	const loadingText = document.getElementById('loading-text')
+	if (overlay) {
+		overlay.classList.remove('hidden')
+		if (loadingText) loadingText.textContent = text
+	}
+}
+
+function hideLoadingOverlay() {
+	const overlay = document.getElementById('loading-overlay')
+	if (overlay) {
+		setTimeout(() => {
+			overlay.classList.add('hidden')
+		}, 300)
+	}
+}
+
 let allData = { meta: {}, matches: [], tree: [] }
 let availableDates = []
+/** @type {Map<string, {date:string,total:number,upcoming:number,finished:number}>} */
+let calendarDays = new Map()
 let selectedDate = null
 /** id лиг из leagues.config.json, отмеченных в фильтре */
 const selectedLeagueIds = new Set()
 /** Порядок выбора лиг (Англия → Германия и т.д.) */
 const selectedLeagueOrder = []
+
+// Кеш для загруженных лиг (оптимизация)
+const leagueCache = new Map()
 
 function addSelectedLeague(id) {
 	if (!id || selectedLeagueIds.has(id)) return
@@ -40,7 +64,7 @@ function setSelectedLeagues(ids, checked) {
 		else removeSelectedLeague(id)
 	}
 }
-const expandedLineups = new Set()
+const expandedLineups = new Set() // legacy, lineups always expanded now
 
 const container = document.getElementById('matches-container')
 const dateLabel = document.getElementById('date-label')
@@ -205,23 +229,64 @@ function escapeHtml(str) {
 
 function normalizePlayer(p) {
 	if (!p || typeof p === 'string') {
-		return { name: String(p || '—'), number: '?', goals: 0 }
+		return { name: String(p || '—'), number: '?', goals: 0, role: 'starter' }
 	}
 	if (/^\d+$/.test(String(p.name)) && (!p.number || p.number === '?')) {
-		return { name: '—', number: p.name, goals: 0 }
+		return { name: '—', number: p.name, goals: 0, role: p.role || 'starter' }
 	}
 	const goals = p.goals != null ? p.goals : 0
 	return {
 		name: String(p.name).trim(),
 		number: p.number || '?',
 		goals,
+		role: p.role || 'starter',
 	}
+}
+
+function partitionLineup(players) {
+	const list = (players || []).map(normalizePlayer)
+	const subs = list.filter(p => p.role === 'sub')
+	let starters = list.filter(p => p.role !== 'sub')
+
+	if (subs.length > 0) return { starters, subs }
+
+	if (starters.length > 11) {
+		return { starters: starters.slice(0, 11), subs: starters.slice(11) }
+	}
+
+	return { starters, subs: [] }
 }
 
 function formatPlayer(p) {
 	const pl = normalizePlayer(p)
+	const num = pl.number && pl.number !== '?' ? `${pl.number}. ` : ''
 	const g = pl.goals != null ? pl.goals : 0
-	return `${pl.name} (${g})`
+	return `${num}${pl.name} (${g})`
+}
+
+function renderPlayerList(players) {
+	return players
+		.map(p => {
+			const goalClass = (p.goals || 0) > 0 ? ' lineup-player-scored' : ''
+			return `<span class="lineup-player${goalClass}">${escapeHtml(formatPlayer(p))}</span>`
+		})
+		.join('')
+}
+
+function renderLineupGrid(players) {
+	const { starters, subs } = partitionLineup(players)
+	if (!starters.length && !subs.length) {
+		return '<span class="lineup-empty">—</span>'
+	}
+
+	const startersHtml = starters.length
+		? `<div class="lineup-section"><div class="lineup-section-title">Старт</div><div class="lineup-players">${renderPlayerList(starters)}</div></div>`
+		: ''
+	const subsHtml = subs.length
+		? `<div class="lineup-section"><div class="lineup-section-title">Запас</div><div class="lineup-players">${renderPlayerList(subs)}</div></div>`
+		: ''
+
+	return `<div class="lineup-grid expanded">${startersHtml}${subsHtml}</div>`
 }
 
 /** Счёт: (итог) счёт 1-го тайма | счёт 2-го тайма — как на Livescore */
@@ -271,31 +336,7 @@ function getHalfScores(match) {
 	}
 }
 
-function sortPlayersByGoals(players) {
-	return [...players].sort((a, b) => {
-		const dg = (b.goals || 0) - (a.goals || 0)
-		if (dg !== 0) return dg
-		return String(a.name).localeCompare(String(b.name), 'ru')
-	})
-}
-
-function renderLineupGrid(players, matchId, side, expanded) {
-	const list = sortPlayersByGoals((players || []).map(normalizePlayer))
-	if (!list.length) {
-		return '<span class="lineup-empty">—</span>'
-	}
-	const items = list
-		.map(p => {
-			const goalClass = (p.goals || 0) > 0 ? ' lineup-player-scored' : ''
-			return `<span class="lineup-player${goalClass}">${escapeHtml(formatPlayer(p))}</span>`
-		})
-		.join('')
-	return `<div class="lineup-grid${expanded ? ' expanded' : ''}" data-id="${matchId}" data-side="${side}">${items}</div>`
-}
-
 function renderMatchBlock(match) {
-	const expandedHome = expandedLineups.has(`${match.id}-home`)
-	const expandedAway = expandedLineups.has(`${match.id}-away`)
 	const openLink = match.url
 		? `<a href="${escapeHtml(match.url)}" target="_blank" rel="noopener">Открыть &gt;</a>`
 		: ''
@@ -304,11 +345,11 @@ function renderMatchBlock(match) {
 		const ppg = match.ppg?.[row.key] || { home: '—', away: '—', gap: '—' }
 		const lineupHome =
 			i === 0
-				? `<td class="lineup-cell" rowspan="${PPG_ROW_COUNT}">${renderLineupGrid(match.homeLineup, match.id, 'home', expandedHome)}</td>`
+				? `<td class="lineup-cell" rowspan="${PPG_ROW_COUNT}">${renderLineupGrid(match.homeLineup)}</td>`
 				: ''
 		const lineupAway =
 			i === 0
-				? `<td class="lineup-cell" rowspan="${PPG_ROW_COUNT}">${renderLineupGrid(match.awayLineup, match.id, 'away', expandedAway)}</td>`
+				? `<td class="lineup-cell" rowspan="${PPG_ROW_COUNT}">${renderLineupGrid(match.awayLineup)}</td>`
 				: ''
 
 		return `
@@ -339,11 +380,24 @@ function renderMatchBlock(match) {
 		: ''
 
 	let scoreCell
-	if (match.time) {
-		scoreCell = `<th class="col-score wcl-cell_1y2-p">${escapeHtml(match.time)}</th>`
+	const kickoff = match.time || ''
+	
+	if (status === 'scheduled' || status === 'live' || status === 'postponed' || status === 'cancelled') {
+		// Предстоящий матч или перенесённый - показываем время
+		if (kickoff) {
+			scoreCell = `<th class="col-score wcl-cell_1y2-p match-upcoming-time">
+				<span class="match-kickoff-icon">🕐</span>
+				<span class="match-kickoff-text">${escapeHtml(kickoff)}</span>
+			</th>`
+		} else {
+			scoreCell = `<th class="col-score wcl-cell_1y2-p match-upcoming-time">
+				<span class="match-upcoming-label">Время неизвестно</span>
+			</th>`
+		}
 	} else {
+		// Завершённый матч - показываем счёт
 		const { htH, htA, stH, stA } = getHalfScores(match)
-		scoreCell = `<th class="col-score wcl-cell_1y2-p">
+		scoreCell = `<th class="col-score wcl-cell_1y2-p match-finished-score">
 			<span class="score-cell">
 				<span class="wcl-bold_NZXv6">(${escapeHtml(`${match.score1}-${match.score2}`)})</span>
 				<span class="wcl-scores-overline-02_bpqU7"> ${escapeHtml(`${htH}-${htA}`)}</span>
@@ -354,7 +408,7 @@ function renderMatchBlock(match) {
 	}
 
 	return `
-	<article class="match-block" data-id="${escapeHtml(match.id)}" data-date="${escapeHtml(match.date)}" data-status="${escapeHtml(status)}">
+	<article class="match-block" data-id="${escapeHtml(match.id)}" data-date="${escapeHtml(match.calendarDate || match.date)}" data-status="${escapeHtml(status)}">
 		<div class="match-league-bar">
 			<span>${escapeHtml(match.leagueLabel || `${allData.meta.country}: ${allData.meta.league}`)}</span>
 			<span class="match-status match-status-${escapeHtml(status)}">${escapeHtml(statusText)}</span>
@@ -371,13 +425,11 @@ function renderMatchBlock(match) {
 					<th class="col-lineup">
 						<div class="lineup-head">
 							<span>Состав (${escapeHtml(match.homeTeam)})</span>
-							<a href="#" class="show-all" data-id="${escapeHtml(match.id)}" data-side="home">Показать все</a>
 						</div>
 					</th>
 					<th class="col-lineup">
 						<div class="lineup-head">
 							<span>Состав (${escapeHtml(match.awayTeam)})</span>
-							<a href="#" class="show-all" data-id="${escapeHtml(match.id)}" data-side="away">Показать все</a>
 						</div>
 					</th>
 				</tr>
@@ -393,7 +445,9 @@ function getFilteredMatches() {
 		m => !m.leagueId || selectedLeagueIds.has(m.leagueId),
 	)
 	if (selectedDate) {
-		list = list.filter(m => m.date === selectedDate)
+		list = list.filter(
+			m => (m.calendarDate || m.date) === selectedDate,
+		)
 	}
 	list = list.filter(passesPpgFilters)
 	return list
@@ -403,22 +457,60 @@ function leaguesQuery() {
 	return selectedLeagueOrder.filter(id => selectedLeagueIds.has(id)).join(',')
 }
 
+function applyCalendarPayload(payload) {
+	if (Array.isArray(payload)) {
+		availableDates = payload
+		calendarDays = new Map()
+		for (const d of payload) {
+			calendarDays.set(d, { date: d, total: 1, upcoming: 0, finished: 1 })
+		}
+		return
+	}
+	availableDates = payload.dates || []
+	calendarDays = new Map()
+	for (const day of payload.days || []) {
+		calendarDays.set(day.date, day)
+	}
+}
+
 async function reloadData() {
 	const q = leaguesQuery()
-	const suffix = q ? `?leagues=${encodeURIComponent(q)}` : ''
-	const [leagueRes, datesRes] = await Promise.all([
-		fetch(`/api/league${suffix}`),
-		fetch(`/api/dates${suffix}`),
-	])
-	const payload = await leagueRes.json()
-	allData.matches = payload.matches || []
-	allData.meta = payload.meta || {}
-	if (payload.tree) allData.tree = payload.tree
-	availableDates = await datesRes.json()
+	if (!q) {
+		allData.matches = []
+		availableDates = []
+		calendarDays = new Map()
+		return
+	}
+	
+	showLoadingOverlay('Загрузка матчей...')
+	
+	try {
+		const suffix = `?leagues=${encodeURIComponent(q)}`
+		const [leagueRes, datesRes] = await Promise.all([
+			fetch(`/api/league${suffix}`),
+			fetch(`/api/dates${suffix}`),
+		])
+		const payload = await leagueRes.json()
+		allData.matches = payload.matches || []
+		allData.meta = payload.meta || {}
+		if (payload.tree) allData.tree = payload.tree
+		applyCalendarPayload(await datesRes.json())
+	} finally {
+		hideLoadingOverlay()
+	}
 }
 
 function renderMatches() {
 	const matches = getFilteredMatches()
+
+	if (!selectedLeagueIds.size) {
+		container.innerHTML = `
+			<div class="empty-state">
+				<p>Выберите лиги в фильтре «Страна» — по умолчанию ничего не загружается.</p>
+				<p>Отметьте нужные сезоны, затем используйте календарь для просмотра матчей.</p>
+			</div>`
+		return
+	}
 
 	if (!allData.matches.length) {
 		container.innerHTML = `
@@ -444,38 +536,7 @@ function renderMatches() {
 
 	const sections = groupMatchesByLeagueAndTour(matches)
 	container.innerHTML = sections.map(renderLeagueSection).join('')
-
-	container.querySelectorAll('.show-all').forEach(link => {
-		link.addEventListener('click', e => {
-			e.preventDefault()
-			const key = `${link.dataset.id}-${link.dataset.side}`
-			expandedLineups.add(key)
-			renderMatches()
-		})
-	})
-
-	container.querySelectorAll('.btn-sync').forEach(btn => {
-		btn.addEventListener('click', async () => {
-			const id = btn.dataset.matchId
-			btn.disabled = true
-			btn.textContent = 'Синхронизация…'
-			try {
-				const res = await fetch(`/api/matches/${encodeURIComponent(id)}/sync`, {
-					method: 'POST',
-				})
-				const data = await res.json()
-				if (!res.ok) throw new Error(data.error || res.statusText)
-				const idx = allData.matches.findIndex(m => m.id === id)
-				if (idx >= 0) allData.matches[idx] = data.match
-				await reloadData()
-				renderMatches()
-			} catch (err) {
-				alert(`Ошибка синхронизации: ${err.message}`)
-				btn.disabled = false
-				btn.textContent = 'Синхронизировать'
-			}
-		})
-	})
+	bindSyncButtons()
 }
 
 function getCountryTreeData() {
@@ -556,7 +617,14 @@ function renderCountryRow(item, level = 0) {
 async function onLeagueFilterChange() {
 	await reloadData()
 	renderCountryTree()
-	renderMatches()
+	if (availableDates.length) {
+		const anchor =
+			parseRuDate(selectedDate || availableDates[0]) || new Date()
+		fillCalendarSelects(anchor)
+	}
+	renderCalendarGrid()
+	if (dateLabel.textContent === 'Предстоящие') renderUpcomingMatches()
+	else renderMatches()
 }
 
 function renderCountryTree() {
@@ -640,11 +708,7 @@ function setMetricDropdownOpen(open) {
 
 function selectMainMetric(metric) {
 	mainPpgMetric = metric
-	if (ppgMetricLabel) ppgMetricLabel.textContent = METRIC_LABELS[metric] || metric
-	ppgMetricDropdown?.querySelectorAll('button').forEach(btn => {
-		btn.classList.toggle('active', btn.dataset.metric === metric)
-	})
-	setMetricDropdownOpen(false)
+	updatePpgToggleButtons()
 	renderMatches()
 }
 
@@ -690,21 +754,14 @@ function initSubMetricDropdown({
 }
 
 function initPpgFilters() {
-	ppgMetricDropdown?.querySelectorAll('button').forEach(btn => {
+	// Новый переключатель PPG (T/T) / PPG (H/A)
+	document.querySelectorAll('.ppg-toggle-btn').forEach(btn => {
 		btn.classList.toggle('active', btn.dataset.metric === mainPpgMetric)
 		btn.addEventListener('click', e => {
 			e.stopPropagation()
 			selectMainMetric(btn.dataset.metric)
 		})
 	})
-
-	btnPpgMetric?.addEventListener('click', e => {
-		e.stopPropagation()
-		const open = ppgMetricDropdown.classList.contains('hidden')
-		setMetricDropdownOpen(open)
-	})
-
-	ppgMetricDropdown?.addEventListener('click', e => e.stopPropagation())
 
 	initSubMetricDropdown({
 		btnId: 'btn-ppg-ht-metric',
@@ -729,6 +786,13 @@ function initPpgFilters() {
 	ppgMainInput?.addEventListener('input', renderMatches)
 	ppgHtInput?.addEventListener('input', renderMatches)
 	ppgStInput?.addEventListener('input', renderMatches)
+}
+
+function updatePpgToggleButtons() {
+	document.querySelectorAll('.ppg-toggle-btn').forEach(btn => {
+		btn.classList.toggle('active', btn.dataset.metric === mainPpgMetric)
+	})
+	if (ppgMetricLabel) ppgMetricLabel.textContent = METRIC_LABELS[mainPpgMetric] || mainPpgMetric
 }
 
 function fillCalendarSelects(date) {
@@ -766,6 +830,10 @@ function fillCalendarSelects(date) {
 		})
 }
 
+function getTodayKey() {
+	return formatRuDate(new Date())
+}
+
 function renderCalendarGrid() {
 	const day = parseInt(calDay.value, 10)
 	const month = parseInt(calMonth.value, 10)
@@ -774,6 +842,7 @@ function renderCalendarGrid() {
 	const first = new Date(year, month, 1)
 	const startDay = (first.getDay() + 6) % 7
 	const daysInMonth = new Date(year, month + 1, 0).getDate()
+	const todayKey = getTodayKey()
 
 	calendarGrid.innerHTML = ''
 
@@ -788,8 +857,22 @@ function renderCalendarGrid() {
 		const ru = formatRuDate(new Date(year, month, d))
 		cell.textContent = d
 
-		if (availableDates.includes(ru)) cell.classList.add('has-matches')
+		const info = calendarDays.get(ru)
+		if (info) {
+			cell.classList.add('has-matches')
+			cell.title = `${info.total} матч(ей): ${info.finished} сыграно, ${info.upcoming} предстоящих`
+			if (info.upcoming > 0) cell.classList.add('has-upcoming')
+			if (info.finished > 0 && info.upcoming === 0) {
+				cell.classList.add('has-finished-only')
+			}
+		}
 		if (selectedDate === ru) cell.classList.add('selected')
+		if (ru === todayKey) cell.classList.add('is-today')
+
+		const cellDate = parseRuDate(ru)
+		if (cellDate && cellDate < new Date(todayKey.split('.').reverse().join('-'))) {
+			if (!cell.classList.contains('has-upcoming')) cell.classList.add('is-past')
+		}
 
 		cell.addEventListener('click', () => {
 			selectedDate = ru
@@ -807,29 +890,138 @@ function renderCalendarGrid() {
 }
 
 function initCalendar() {
-	const first =
-		availableDates[0] ||
-		(allData.matches[0] && allData.matches[0].date) ||
-		formatRuDate(new Date())
+	const today = new Date()
+	const todayKey = getTodayKey()
 
 	selectedDate = null
-	const date = parseRuDate(first) || new Date()
-	dateLabel.textContent = formatRuDate(date)
+	dateLabel.textContent = 'Все матчи'
 
-	fillCalendarSelects(date)
+	fillCalendarSelects(today)
 	renderCalendarGrid()
 
 	const resetBtn = document.getElementById('btn-reset-date')
 	resetBtn?.addEventListener('click', () => {
 		selectedDate = null
-		dateLabel.textContent = formatRuDate(date)
+		dateLabel.textContent = 'Все матчи'
 		renderCalendarGrid()
 		renderMatches()
+	})
+
+	const upcomingBtn = document.getElementById('btn-upcoming-date')
+	upcomingBtn?.addEventListener('click', () => {
+		selectedDate = null
+		dateLabel.textContent = 'Предстоящие'
+		calendarPopup.classList.add('hidden')
+		renderCalendarGrid()
+		renderUpcomingMatches()
 	})
 
 	;[calDay, calMonth, calYear].forEach(el => {
 		el.addEventListener('change', renderCalendarGrid)
 	})
+}
+
+function renderUpcomingMatches() {
+	const matches = allData.matches
+		.filter(m => selectedLeagueIds.has(m.leagueId))
+		.filter(m => m.status === 'scheduled' || m.status === 'live')
+		.filter(passesPpgFilters)
+		.sort((a, b) => {
+			const da = parseRuDate(a.calendarDate || a.date)
+			const db = parseRuDate(b.calendarDate || b.date)
+			return (da?.getTime() || 0) - (db?.getTime() || 0)
+		})
+
+	if (!matches.length) {
+		container.innerHTML =
+			'<div class="empty-state">Нет предстоящих матчей в выбранных лигах</div>'
+		return
+	}
+
+	const sections = groupMatchesByLeagueAndTour(matches)
+	container.innerHTML = sections.map(renderLeagueSection).join('')
+	bindSyncButtons()
+}
+
+function bindSyncButtons() {
+	container.querySelectorAll('.btn-sync').forEach(btn => {
+		btn.addEventListener('click', async () => {
+			const id = btn.dataset.matchId
+			btn.disabled = true
+			btn.textContent = 'Синхронизация…'
+			try {
+				const res = await fetch(`/api/matches/${encodeURIComponent(id)}/sync`, {
+					method: 'POST',
+				})
+				const data = await res.json()
+				if (!res.ok) throw new Error(data.error || res.statusText)
+				const idx = allData.matches.findIndex(m => m.id === id)
+				if (idx >= 0) allData.matches[idx] = data.match
+				await reloadData()
+				if (dateLabel.textContent === 'Предстоящие') renderUpcomingMatches()
+				else renderMatches()
+			} catch (err) {
+				alert(`Ошибка синхронизации: ${err.message}`)
+				btn.disabled = false
+				btn.textContent = 'Синхронизировать'
+			}
+		})
+	})
+}
+
+/** Синхронизация всех матчей выбранных стран */
+async function syncAllCountries() {
+	if (!selectedLeagueIds.size) {
+		alert('Выберите хотя бы одну лигу')
+		return
+	}
+
+	const btn = document.getElementById('btn-sync-all-countries')
+	if (btn) {
+		btn.disabled = true
+		btn.textContent = '⏳ Синхронизация...'
+	}
+
+	showLoadingOverlay('Синхронизация предстоящих матчей...')
+
+	try {
+		const upcomingMatches = allData.matches.filter(
+			m => m.status === 'scheduled' || m.status === 'live'
+		)
+
+		let syncedCount = 0
+		for (const match of upcomingMatches) {
+			try {
+				const res = await fetch(`/api/matches/${encodeURIComponent(match.id)}/sync`, {
+					method: 'POST',
+				})
+				if (res.ok) {
+					const data = await res.json()
+					const idx = allData.matches.findIndex(m => m.id === match.id)
+					if (idx >= 0) allData.matches[idx] = data.match
+					syncedCount++
+				}
+			} catch (err) {
+				console.error(`Ошибка синхронизации матча ${match.id}:`, err)
+			}
+			// Небольшая задержка между синхронизациями
+			await new Promise(resolve => setTimeout(resolve, 200))
+		}
+
+		await reloadData()
+		if (dateLabel.textContent === 'Предстоящие') renderUpcomingMatches()
+		else renderMatches()
+
+		alert(`Синхронизировано ${syncedCount} матчей`)
+	} catch (err) {
+		alert(`Ошибка синхронизации: ${err.message}`)
+	} finally {
+		hideLoadingOverlay()
+		if (btn) {
+			btn.disabled = false
+			btn.textContent = '🔄 Синхронизировать страны'
+		}
+	}
 }
 
 document.getElementById('btn-date').addEventListener('click', e => {
@@ -846,35 +1038,34 @@ document.addEventListener('click', () => {
 })
 
 async function init() {
+	showLoadingOverlay('Загрузка конфигурации...')
+	
 	try {
-		const res = await fetch('/api/league')
+		const res = await fetch('/api/tree')
 		const payload = await res.json()
-		allData.matches = payload.matches || []
-		allData.meta = payload.meta || {}
 		allData.tree = payload.tree || []
-
-		for (const group of payload.tree || []) {
-			if (group.country === 'Германия') continue
-			for (const lg of group.leagues || []) {
-				for (const s of lg.seasons || []) {
-					if (s.loaded) addSelectedLeague(s.id)
-				}
-			}
-		}
-
-		const datesRes = await fetch(
-			`/api/dates?leagues=${encodeURIComponent(leaguesQuery())}`,
-		)
-		availableDates = await datesRes.json()
+		allData.matches = []
 	} catch (err) {
+		hideLoadingOverlay()
 		container.innerHTML = `<div class="empty-state">Ошибка загрузки: ${err.message}</div>`
 		return
 	}
 
+	// Инициализация интерфейса
 	renderCountryTree()
 	initCountryDropdown()
 	initPpgFilters()
 	initCalendar()
+	
+	// Инициализация кнопки синхронизации стран
+	const syncCountriesBtn = document.getElementById('btn-sync-all-countries')
+	if (syncCountriesBtn) {
+		syncCountriesBtn.addEventListener('click', syncAllCountries)
+	}
+	
+	// Скрываем загруженный экран после инициализации
+	hideLoadingOverlay()
+	
 	renderMatches()
 }
 
